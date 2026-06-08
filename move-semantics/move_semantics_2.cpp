@@ -7,12 +7,15 @@
 
 namespace Explain
 {
+    template <typename T>
     class unique_ptr
     {
     public:
-        unique_ptr(std::string* text_ptr)
+        unique_ptr() = default;
+
+        unique_ptr(T* ptr)
         {
-            text_ptr_ = text_ptr;
+            ptr_ = ptr;
         }
 
         // copy constructor
@@ -23,10 +26,10 @@ namespace Explain
 
         // move constructor
         unique_ptr(unique_ptr&& other)
+            : ptr_(other.ptr_)
         {
             std::cout << "Move constructor of unique_ptr\n";
-            text_ptr_ = other.text_ptr_;
-            other.text_ptr_ = nullptr;
+            other.ptr_ = nullptr;
         }
 
         // move assignment
@@ -35,9 +38,9 @@ namespace Explain
             std::cout << "Move assignment of unique_ptr\n";
             if (this != &other) // check if not self-assignment
             {
-                delete text_ptr_;
-                text_ptr_ = other.text_ptr_; 
-                other.text_ptr_ = nullptr;
+                delete ptr_;
+                ptr_ = other.ptr_; 
+                other.ptr_ = nullptr;
             }
 
             return *this;
@@ -45,25 +48,30 @@ namespace Explain
         
         ~unique_ptr()
         {
-            delete text_ptr_;
+            delete ptr_;
         }
 
         operator bool() const
         {
-            return text_ptr_ != nullptr;    
+            return ptr_ != nullptr;    
         }
 
-        std::string& operator*() const
+        T& operator*() const
         {
-            return *text_ptr_;
+            return *ptr_;
         }
 
-        std::string* operator->() const
+        T* operator->() const
         {
-            return text_ptr_;
+            return ptr_;
+        }
+
+        T* get() const
+        {
+            return ptr_;
         }
     private:
-        std::string* text_ptr_;
+        T* ptr_ = nullptr;
     };
 } // namespace Explain
 
@@ -79,12 +87,12 @@ TEST_CASE("move semantics - unique_ptr")
     }    
 
     {
-        Explain::unique_ptr ptr_1(new std::string("text"));
+        Explain::unique_ptr<std::string> ptr_1(new std::string("text"));
 
         if (ptr_1)
             std::cout << *ptr_1 << " has length " << ptr_1->size() << "\n";
 
-        Explain::unique_ptr ptr_2 = std::move(ptr_1);
+        Explain::unique_ptr<std::string> ptr_2 = std::move(ptr_1);
         std::cout << *ptr_2 << "\n";
 
         ptr_1 = Explain::unique_ptr(new std::string("another text"));
@@ -92,4 +100,28 @@ TEST_CASE("move semantics - unique_ptr")
 
         ptr_2 = std::move(ptr_2); // self-assignment
     }
+}
+
+TEST_CASE("move semantics - unique_ptr - Gadget")
+{
+    using Helpers::Gadget;
+
+    {
+        Gadget* ptr_g = new Gadget(1, "ipad");
+
+        if (ptr_g)
+            ptr_g->use();
+
+        delete ptr_g;
+    }
+
+    {
+        Explain::unique_ptr<Gadget> ptr_g(new Gadget(2, "smartwatch"));
+
+        if (ptr_g)
+            ptr_g->use();
+    }
+
+    Explain::unique_ptr<Gadget> ptr_g2;
+    REQUIRE(ptr_g2.get() == nullptr);
 }
