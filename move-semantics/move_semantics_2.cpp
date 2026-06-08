@@ -13,7 +13,7 @@ namespace Explain
     public:
         unique_ptr() = default;
 
-        unique_ptr(T* ptr)
+        unique_ptr(T* ptr) noexcept
         {
             ptr_ = ptr;
         }
@@ -25,17 +25,15 @@ namespace Explain
         unique_ptr& operator=(const unique_ptr& other) = delete;
 
         // move constructor
-        unique_ptr(unique_ptr&& other)
+        unique_ptr(unique_ptr&& other) noexcept
             : ptr_(other.ptr_)
         {
-            std::cout << "Move constructor of unique_ptr\n";
             other.ptr_ = nullptr;
         }
 
         // move assignment
-        unique_ptr& operator=(unique_ptr&& other)
+        unique_ptr& operator=(unique_ptr&& other) noexcept
         {
-            std::cout << "Move assignment of unique_ptr\n";
             if (this != &other) // check if not self-assignment
             {
                 delete ptr_;
@@ -46,27 +44,27 @@ namespace Explain
             return *this;
         }
         
-        ~unique_ptr()
+        ~unique_ptr() noexcept
         {
             delete ptr_;
         }
 
-        operator bool() const
+        operator bool() const noexcept
         {
             return ptr_ != nullptr;    
         }
 
-        T& operator*() const
+        T& operator*() const noexcept
         {
             return *ptr_;
         }
 
-        T* operator->() const
+        T* operator->() const noexcept
         {
             return ptr_;
         }
 
-        T* get() const
+        T* get() const noexcept
         {
             return ptr_;
         }

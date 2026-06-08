@@ -59,7 +59,7 @@ public:
     }
 
     // TODO: move semantics
-    Data(Data&& other)
+    Data(Data&& other) noexcept
         : name_(std::move(other.name_))
         , data_(other.data_)
         , size_(other.size_)
@@ -70,7 +70,7 @@ public:
         std::cout << "Data=(" << name_ << ": mv)\n";
     }
 
-    Data& operator=(Data&& other)
+    Data& operator=(Data&& other) noexcept
     {
         if (this != &other)
         {
@@ -83,39 +83,39 @@ public:
         return *this;
     }
 
-    ~Data()
+    ~Data() noexcept
     {
         delete[] data_;
     }
 
-    void swap(Data& other)
+    void swap(Data& other) noexcept(noexcept(name_.swap(other.name_)))
     {
         name_.swap(other.name_);
         std::swap(data_, other.data_);
         std::swap(size_, other.size_);
     }
 
-    iterator begin()
+    iterator begin() noexcept
     {
         return data_;
     }
 
-    iterator end()
+    iterator end() noexcept
     {
         return data_ + size_;
     }
 
-    const_iterator begin() const
+    const_iterator begin() const noexcept
     {
         return data_;
     }
 
-    const_iterator end() const
+    const_iterator end() const noexcept
     {
         return data_ + size_;
     }
 
-    size_t size() const
+    size_t size() const noexcept
     {
         return size_;
     }
@@ -188,6 +188,18 @@ TEST_CASE("Data & move semantics")
     dataset.push_back(create_data_set("data-2")); // mv
     dataset.push_back(ds3); //cc
     dataset.push_back(std::move(ds3)); // mv
+}
+
+TEST_CASE("push_backs in vector")
+{
+    std::vector<Data> dataset;
+
+    dataset.push_back(create_data_set("data-1")); 
+    dataset.push_back(create_data_set("data-2")); 
+    dataset.push_back(create_data_set("data-3")); 
+    dataset.push_back(create_data_set("data-4")); 
+    dataset.push_back(create_data_set("data-5")); 
+    dataset.push_back(create_data_set("data-6")); 
 }
 
 TEST_CASE("Legacy vs Modern C++")
