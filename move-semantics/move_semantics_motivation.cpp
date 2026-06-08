@@ -8,6 +8,7 @@
 
 using namespace std::literals;
 
+
 Helpers::Vector create_and_fill()
 {
     using Helpers::Vector, Helpers::String;
@@ -22,7 +23,7 @@ Helpers::Vector create_and_fill()
 
     vec.push_back("text"); 
 
-    vec.push_back(str);  
+    vec.push_back(std::move(str));  
 
     return vec;
 }
