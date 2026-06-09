@@ -81,6 +81,11 @@ public:
     }
 };
 
+std::unique_ptr<Device> create_device()
+{
+    return std::make_unique<Device>();
+}
+
 TEST_CASE("using observer pattern")
 {
     using namespace std;
@@ -91,7 +96,7 @@ TEST_CASE("using observer pattern")
     s.register_observer(logger);
 
     {
-        std::shared_ptr<Device> device = std::make_shared<Device>();
+        std::shared_ptr<Device> device = create_device();
         s.register_observer(device);
 
         s.set_state(1);

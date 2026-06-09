@@ -4,32 +4,42 @@
 #include <string>
 #include <vector>
 
+
 namespace Exercise
 {
     // TODO: Implement a function that sets all elements of a container to zero (default value).
 
+    template <typename Container>
+    void zero(Container& container)
+    {
+        using ValueType = typename Container::value_type;
+
+        for (auto& item : container)
+        {
+            item = ValueType{};
+        }
+    }
 } // namespace Exercise
 
 TEST_CASE("zero")
 {
     using namespace Exercise;
 
-    // SECTION("vector<int>")
-    // {
-    //     std::vector<int> vec = {1, 2, 3, 4};
+    SECTION("vector<int>")
+    {
+        std::vector<int> vec = {1, 2, 3, 4};
 
-    //     zero(vec);
+        zero(vec);
 
-    //     REQUIRE(vec == std::vector{0, 0, 0, 0});
-    // }
+        REQUIRE(vec == std::vector{0, 0, 0, 0});
+    }
 
-    // SECTION("list<std::string>")
-    // {
-    //     std::list<std::string> lst = {"one", "two", "three"};
+    SECTION("list<std::string>")
+    {
+        std::list<std::string> lst = {"one", "two", "three"};
 
-    //     zero(lst);
+        zero(lst);
 
-    //     REQUIRE(lst == std::list<std::string>{"", "", ""});
-    // }    
+        REQUIRE(lst == std::list<std::string>{"", "", ""});
+    }
 }
-
