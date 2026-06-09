@@ -97,7 +97,86 @@ namespace ModernCpp
     template <typename T>
     class FwdList
     {
-        // TODO: use std::unique_ptr & implement FwdList
+  private:
+        struct Node
+        {
+            T value{};
+            std::unique_ptr<Node> next;
+
+            Node(T value, std::unique_ptr<Node> next)
+                : value(std::move(value)), next(std::move(next))
+            {}
+        };
+    public:
+        FwdList() noexcept : size_(0), head_(nullptr)
+        {
+        }
+
+        ~FwdList() noexcept
+        {
+            while (head_)
+            {
+                head_ = std::move(head_->next);
+            }
+        }
+        
+        FwdList(const FwdList&) = delete;
+        FwdList& operator=(const FwdList&) = delete;
+        FwdList(FwdList&&) = default;
+        FwdList& operator=(FwdList&&) = default;
+
+        bool empty() const noexcept
+        {
+            return size_ == 0;
+        }
+
+        size_t size() const noexcept
+        {
+            return size_;
+        }
+
+        void push_front(const T& item)
+        {
+            head_ = std::make_unique<Node>(item, std::move(head_));
+            
+            ++size_;
+        }
+
+        T& front() const noexcept
+        {
+            assert(head_);
+            return head_->value;
+        }
+
+        void pop_front()
+        {
+            assert(size_ != 0);
+
+            head_ = std::move(head_->next);
+            --size_;
+        }
+
+        friend std::ostream& operator<<(std::ostream& out, const FwdList<T>& lst)
+        {
+            out << "[";
+            auto* node = lst.head_.get();
+
+            while(node)
+            {
+                out << node->value;
+                node = node->next.get();
+
+                if (node)
+                    out << ", ";
+            }
+
+            out << "]";
+
+            return out;
+        }
+    private:
+        size_t size_;
+        std::unique_ptr<Node> head_;  
     };
 }
 

@@ -3,6 +3,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <span>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace std;
@@ -77,25 +78,25 @@ void reset_value(Gadget& g, int n)
 //////////////////////////////////////////////
 // TODO - modernize the code below
 
-Gadget* create_gadget(int arg)
+std::unique_ptr<Gadget> create_gadget(int arg)
 {
-    return new Gadget(arg);
+    return std::unique_ptr<Gadget>(new Gadget(arg));
 }
 
 class Player
 {
-    Gadget* gadget_;
+    std::unique_ptr<Gadget> gadget_;
     std::ostream* logger_;
 
     Player(const Player&);
     Player& operator=(const Player&);
 
 public:
-    Player(Gadget* g, std::ostream* logger = NULL)
-        : gadget_(g)
+    Player(std::unique_ptr<Gadget> g, std::ostream* logger = NULL)
+        : gadget_(std::move(g))
         , logger_(logger)
     {
-        if (g == NULL)
+        if (gadget_ == nullptr)
             throw std::invalid_argument("Gadget can not be null");
     }
 
@@ -103,8 +104,6 @@ public:
     {
         if (logger_)
             *logger_ << "Destroing a gadget: " << gadget_->id() << std::endl;
-
-        delete gadget_;
     }
 
     void play()
@@ -118,53 +117,57 @@ public:
 
 TEST_CASE("Exercise 1 - Modernize the code using smart pointers")
 {
-    Gadget* ptr_gadget = create_gadget(4);
+    std::unique_ptr<Gadget> ptr_gadget = create_gadget(4);
 
     /* kod korzystajacy z ptrX */
 
     reset_value(*ptr_gadget, 5);
 
     ptr_gadget->unsafe_might_throw();
-
-    delete ptr_gadget;
 }
 
 TEST_CASE("Exercise 2 - Modernize the code using smart pointers")
 {
-    int size = 10;
+    const int size = 10;
 
-    Gadget* buffer = LegacyCode::create_many_gadgets(size);
+    std::unique_ptr<Gadget[]> buffer(LegacyCode::create_many_gadgets(size));
+
+    // since C++20
+    std::span<Gadget> safe_array{buffer.get(), size};
+    for(auto& g : safe_array)
+    {
+        g.unsafe_might_throw();
+    }
 
     for (int i = 0; i < size; ++i)
-        buffer[0].unsafe_might_throw();
-
-    delete[] buffer;
+        buffer[i].unsafe_might_throw();
 }
 
 TEST_CASE("Exercise 3 - Modernize the code using smart pointers")
 {
-    vector<Gadget*> my_gadgets;
+    vector<std::unique_ptr<Gadget>> my_gadgets;
 
     my_gadgets.push_back(create_gadget(87));
     my_gadgets.push_back(create_gadget(12));
-    my_gadgets.push_back(new Gadget(98));
+    my_gadgets.push_back(std::make_unique<Gadget>(98));
 
     int value_generator = 0;
-    for (vector<Gadget*>::iterator it = my_gadgets.begin(); it != my_gadgets.end(); ++it)
+    for (vector<std::unique_ptr<Gadget>>::iterator it = my_gadgets.begin(); it != my_gadgets.end(); ++it)
     {
         cout << "Gadget's old id: " << (*it)->id() << endl;
         reset_value(**it, ++value_generator);
     }
 
-    delete my_gadgets[0];
-    my_gadgets[0] = NULL;
+    std::cout << "--------\n";
 
-    Player p(my_gadgets.back());
-    my_gadgets.back() = NULL;
+    my_gadgets[0].reset();
+    my_gadgets.erase(my_gadgets.begin());
+
+    std::cout << "--------\n";
+
+    Player p(std::move(my_gadgets.back()));
+    my_gadgets.pop_back();
     p.play();
 
-    my_gadgets[1]->unsafe_might_throw();
-
-    for (vector<Gadget*>::iterator it = my_gadgets.begin(); it != my_gadgets.end(); ++it)
-        delete *it;
+    my_gadgets[0]->unsafe_might_throw();
 }

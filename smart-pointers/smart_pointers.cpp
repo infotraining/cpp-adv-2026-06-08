@@ -44,7 +44,7 @@ namespace LegacyCode
             std::cout << "Using " << g->name() << "\n";
     }
 
-    void free_gagdet(Gadget* g)
+    void free_gadget(Gadget* g)
     {
         delete g;
     }

@@ -69,11 +69,17 @@ namespace Explain
             return ptr_;
         }
 
-        T* release(T* value = nullptr) 
+        T* release() noexcept
         {
             T* old_value = ptr_;
-            ptr_ = value;
+            ptr_ = nullptr;
             return old_value;
+        }
+
+        T* reset(T* new_value = nullptr) noexcept
+        {
+            delete ptr_;
+            ptr_ = new_value;
         }
     private:
         T* ptr_ = nullptr;

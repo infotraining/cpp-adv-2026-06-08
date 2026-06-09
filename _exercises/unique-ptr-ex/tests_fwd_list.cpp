@@ -3,7 +3,7 @@
 
 TEST_CASE("Forward List")
 {
-    using namespace LegacyCode;
+    using namespace ModernCpp;
 
     SECTION("default construction")
     {
