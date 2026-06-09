@@ -51,4 +51,5 @@ add_subdirectory(_exercises/smart-ptr-ex)
 add_subdirectory(_exercises/shared-ptr-ex)
 add_subdirectory(_exercises/templates-ex)
 add_subdirectory(_exercises/enable-if-ex)
+add_subdirectory(_exercises/unique-ptr-ex)
 
