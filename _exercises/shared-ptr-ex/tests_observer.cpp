@@ -52,43 +52,43 @@ protected:
     }
 };
 
-class ConcreteObserver1 : public Observer
+class Logger : public Observer
 {
 public:
-    virtual void update(const std::string& event)
+    void update(const std::string& event) override
     {
-        std::cout << "ConcreteObserver1: " << event << std::endl;
+        std::cout << "Logging - event: " << event << std::endl;
     }
 };
 
-class ConcreteObserver2 : public Observer
+class Device : public Observer
 {
 public:
-    virtual void update(const std::string& event)
+    void update(const std::string& event) override
     {
-        std::cout << "ConcreteObserver2: " << event << std::endl;
+        std::cout << "Device notified about event: " << event << std::endl;
     }
 };
 
 TEST_CASE("using observer pattern")
 {
-    // using namespace std;
+    using namespace std;
 
-    // Subject s;
+    Subject s;
 
-    // ConcreteObserver1* o1 = new ConcreteObserver1;
-    // s.register_observer(o1);
+    Logger* logger = new Logger;
+    s.register_observer(logger);
 
-    // {
-    //     ConcreteObserver2* o2 = new ConcreteObserver2;
-    //     s.register_observer(o2);
+    {
+        Device* device = new Device;
+        s.register_observer(device);
 
-    //     s.set_state(1);
+        s.set_state(1);
 
-    //     delete o2;
+        delete device;
 
-    //     cout << "End of scope." << endl;
-    // }
+        cout << "End of scope." << endl;
+    }
 
-    // s.set_state(2);
+    s.set_state(2);
 }
