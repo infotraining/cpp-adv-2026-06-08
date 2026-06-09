@@ -13,7 +13,7 @@ namespace Explain
     public:
         unique_ptr() = default;
 
-        unique_ptr(T* ptr) noexcept
+        explicit unique_ptr(T* ptr) noexcept
         {
             ptr_ = ptr;
         }
@@ -67,6 +67,13 @@ namespace Explain
         T* get() const noexcept
         {
             return ptr_;
+        }
+
+        T* release(T* value = nullptr) 
+        {
+            T* old_value = ptr_;
+            ptr_ = value;
+            return old_value;
         }
     private:
         T* ptr_ = nullptr;
