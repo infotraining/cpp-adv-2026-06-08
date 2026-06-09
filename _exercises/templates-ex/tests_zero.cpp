@@ -42,4 +42,20 @@ TEST_CASE("zero")
 
         REQUIRE(lst == std::list<std::string>{"", "", ""});
     }
+
+    SECTION("native array")
+    {
+        int native_array[10];
+        zero(native_array);
+
+        REQUIRE(std::all_of(std::begin(native_array), std::end(native_array), [](int item) { return item == 0; }));
+    }
+}
+
+TEST_CASE("auto declarations")
+{
+    auto av1 = 42; // int
+
+    const int x = 665;
+    auto av2 = x;  // int
 }
