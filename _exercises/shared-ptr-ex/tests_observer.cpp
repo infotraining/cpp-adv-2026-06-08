@@ -16,19 +16,20 @@ public:
 class Subject
 {
     int state_;
-    std::set<Observer*> observers_;
+    std::set<std::weak_ptr<Observer>, std::owner_less<std::weak_ptr<Observer>>> observers_;
 
 public:
-    Subject() : state_(0)
+    Subject()
+        : state_(0)
     {
     }
 
-    void register_observer(Observer* observer)
+    void register_observer(std::weak_ptr<Observer> observer)
     {
         observers_.insert(observer);
     }
 
-    void unregister_observer(Observer* observer)
+    void unregister_observer(std::weak_ptr<Observer> observer)
     {
         observers_.erase(observer);
     }
@@ -45,9 +46,19 @@ public:
 protected:
     void notify(const std::string& event_args)
     {
-        for (Observer* observer : observers_)
+        for (auto it = observers_.begin(); it != observers_.end();)
         {
-            observer->update(event_args);
+            std::shared_ptr<Observer> living_ptr = it->lock(); 
+
+            if (living_ptr)
+            {
+                living_ptr->update(event_args);
+                ++it;
+            }
+            else
+            {
+                it = observers_.erase(it);
+            }
         }
     }
 };
@@ -76,16 +87,14 @@ TEST_CASE("using observer pattern")
 
     Subject s;
 
-    Logger* logger = new Logger;
+    std::shared_ptr<Logger> logger = std::make_shared<Logger>();
     s.register_observer(logger);
 
     {
-        Device* device = new Device;
+        std::shared_ptr<Device> device = std::make_shared<Device>();
         s.register_observer(device);
 
         s.set_state(1);
-
-        delete device;
 
         cout << "End of scope." << endl;
     }
