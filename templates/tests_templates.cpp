@@ -80,7 +80,7 @@ TEST_CASE("function templates")
 }
 
 template <typename Iterator>
-Iterator min_value(Iterator begin, Iterator end)
+constexpr Iterator min_value(Iterator begin, Iterator end)
 {
     Iterator min_value_it = begin;
     for (auto it = begin; it != end; it++)
@@ -99,7 +99,7 @@ bool cmp_by_size(const Container& a, const Container& b)
 }
 
 template <typename Iterator, typename Comparator>
-Iterator min_value(Iterator begin, Iterator end, Comparator isSmaller)
+constexpr Iterator min_value(Iterator begin, Iterator end, Comparator isSmaller)
 {
     Iterator min_value_it = begin;
     for (auto it = begin; it != end; it++)
@@ -159,6 +159,14 @@ TEST_CASE("small exercise")
 
         pos_smallest_vec = min_value(data.begin(), data.end(), [](const std::vector<int>& a, const std::vector<int>& b) { return a.size() < b.size(); });
         REQUIRE(*pos_smallest_vec == std::vector<int>{42});
+    }
+
+    SECTION("compile time")
+    {
+        static constexpr int numbers_1[] = {4, 645, 235, 645, -1, 756, 32, 645};
+
+        constexpr auto pos_min = min_value(std::begin(numbers_1), std::end(numbers_1));
+        static_assert(*pos_min == -1);
     }
 }
 

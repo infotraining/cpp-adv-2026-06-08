@@ -37,13 +37,13 @@ namespace Explain
             if (this != &other) // check if not self-assignment
             {
                 delete ptr_;
-                ptr_ = other.ptr_; 
+                ptr_ = other.ptr_;
                 other.ptr_ = nullptr;
             }
 
             return *this;
         }
-        
+
         ~unique_ptr() noexcept
         {
             delete ptr_;
@@ -51,7 +51,7 @@ namespace Explain
 
         operator bool() const noexcept
         {
-            return ptr_ != nullptr;    
+            return ptr_ != nullptr;
         }
 
         T& operator*() const noexcept
@@ -81,20 +81,33 @@ namespace Explain
             delete ptr_;
             ptr_ = new_value;
         }
+
     private:
         T* ptr_ = nullptr;
     };
 
-    template <typename T, typename TArg>
-    unique_ptr<T> make_unique(TArg&& arg)
-    {
-        return unique_ptr<T>(new T(std::forward<TArg>(arg)));
-    }
+    // template <typename T>
+    // unique_ptr<T> make_unique()
+    // {
+    //     return unique_ptr<T>(new T());
+    // }
 
-    template <typename T, typename TArg1, typename TArg2>
-    unique_ptr<T> make_unique(TArg1&& arg1, TArg2&& arg2)
+    // template <typename T, typename TArg>
+    // unique_ptr<T> make_unique(TArg&& arg)
+    // {
+    //     return unique_ptr<T>(new T(std::forward<TArg>(arg)));
+    // }
+
+    // template <typename T, typename TArg1, typename TArg2>
+    // unique_ptr<T> make_unique(TArg1&& arg1, TArg2&& arg2)
+    // {
+    //     return unique_ptr<T>(new T(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2)));
+    // }
+
+    template <typename T, typename... TArgs>
+    unique_ptr<T> make_unique(TArgs&&... args)
     {
-        return unique_ptr<T>(new T(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2)));
+        return unique_ptr<T>(new T(std::forward<TArgs>(args)...));
     }
 } // namespace Explain
 
@@ -107,7 +120,7 @@ TEST_CASE("move semantics - unique_ptr")
             std::cout << *ptr_1 << " has length " << ptr_1->size() << "\n";
 
         delete ptr_1;
-    }    
+    }
 
     {
         // Explain::unique_ptr<std::string> ptr_1(new std::string("text"));
