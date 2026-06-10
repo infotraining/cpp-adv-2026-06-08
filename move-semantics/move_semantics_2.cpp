@@ -84,6 +84,18 @@ namespace Explain
     private:
         T* ptr_ = nullptr;
     };
+
+    template <typename T, typename TArg>
+    unique_ptr<T> make_unique(TArg&& arg)
+    {
+        return unique_ptr<T>(new T(std::forward<TArg>(arg)));
+    }
+
+    template <typename T, typename TArg1, typename TArg2>
+    unique_ptr<T> make_unique(TArg1&& arg1, TArg2&& arg2)
+    {
+        return unique_ptr<T>(new T(std::forward<TArg1>(arg1), std::forward<TArg2>(arg2)));
+    }
 } // namespace Explain
 
 TEST_CASE("move semantics - unique_ptr")
@@ -98,7 +110,8 @@ TEST_CASE("move semantics - unique_ptr")
     }    
 
     {
-        Explain::unique_ptr<std::string> ptr_1(new std::string("text"));
+        // Explain::unique_ptr<std::string> ptr_1(new std::string("text"));
+        Explain::unique_ptr<std::string> ptr_1 = Explain::make_unique<std::string>("text");
 
         if (ptr_1)
             std::cout << *ptr_1 << " has length " << ptr_1->size() << "\n";
@@ -127,7 +140,8 @@ TEST_CASE("move semantics - unique_ptr - Gadget")
     }
 
     {
-        Explain::unique_ptr<Gadget> ptr_g(new Gadget(2, "smartwatch"));
+        // Explain::unique_ptr<Gadget> ptr_g(new Gadget(2, "smartwatch"));
+        Explain::unique_ptr<Gadget> ptr_g = Explain::make_unique<Gadget>(2, "smartwatch");
 
         if (ptr_g)
             ptr_g->use();

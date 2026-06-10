@@ -162,9 +162,97 @@ TEST_CASE("small exercise")
     }
 }
 
+template <typename T1, typename T2>
+class Pair
+{
+    T1 first_;
+    T2 second_;
+public:
+    template <typename U1, typename U2>
+    Pair(U1&& arg1, U2&& arg2)
+    {
+        first_ = std::forward<U1>(arg1);
+        second_ = std::forward<U2>(arg2);
+    }
+
+    const T1& first() const
+    {
+        return first_;
+    }
+
+    const T2& second() const;
+};
+
+template <typename T1, typename T2>
+const T2& Pair<T1, T2>::second() const
+{
+    return second_;
+}
+
+template <typename T, size_t N>
+struct Array
+{
+    T items[N];
+
+    using iterator = T*;
+    using const_iterator = const T*;
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
+
+    iterator begin()
+    {
+        return items;
+    }
+
+    iterator end()
+    {
+        return items + N;
+    }
+
+    const_iterator begin() const
+    {
+        return items;
+    }
+
+    const_iterator end() const
+    {
+        return items + N;
+    }
+
+    size_t size() const
+    {
+        return N;
+    }
+
+    reference operator[](size_t index)
+    {
+        return items[index];
+    }
+
+    const_reference operator[](size_t index) const
+    {
+        return items[index];
+    }
+};
+
 TEST_CASE("class templates")
 {
-    // TODO
+    Pair<int, std::string> p1(42, "text");
+    REQUIRE(p1.first() == 42);
+    REQUIRE(p1.second() == std::string("text"));
+
+    std::string name = "John";
+    Pair<int, std::string> p2(44, name);
+
+    Array<int, 10> arr1 = {1, 2, 3, 4};
+
+    for(const auto& item : arr1)
+    {
+        std::cout << item << " ";
+    }
+    std::cout << "\n";
+
 }
 
 TEST_CASE("template aliases")

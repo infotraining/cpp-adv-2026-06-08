@@ -1,167 +1,215 @@
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
 #include <array>
+#include <catch2/catch_test_macros.hpp>
 #include <memory>
+#include <deque>
 
-// TEST_CASE("After construction", "[stack,constructors]")
-// {
-//     Stack<int> s;
+template <typename T, typename Container = std::deque<T>>
+class Stack
+{
+    Container values_;
 
-//     SECTION("is empty")
-//     {
-//         REQUIRE(s.empty());
-//     }
+public:
+    Stack()
+    { }
 
-//     SECTION("size is zero")
-//     {
-//         REQUIRE(s.size() == 0);
-//     }
-// }
+    bool empty() const
+    {
+        return values_.empty();
+    }
 
-// TEST_CASE("Pushing an item", "[stack,push]")
-// {
-//     Stack<int> s;
+    size_t size() const
+    {
+        return values_.size();
+    }
 
-//     SECTION("is no longer empty")
-//     {
-//         s.push(1);
+    // void push(T arg1)
+    // {
+    //     values_.push_back(std::move(arg1));
+    // }
 
-//         REQUIRE(!s.empty());
-//     }
+    template <typename TValue>
+    void push(TValue&& value)
+    {
+        values_.push_back(std::forward<TValue>(value));
+    }    
 
-//     SECTION("size is increased")
-//     {
-//         auto size_before = s.size();
+    T& top()
+    {
+        if (values_.empty())
+            throw std::out_of_range("Stack is empty");
 
-//         s.push(1);
+        return values_.back();
+    }
 
-//         REQUIRE(s.size() - size_before == 1);
-//     }
+    void pop()
+    {
+        values_.pop_back();
+    }
+};
 
-//     SECTION("recently pushed item is on a top")
-//     {
-//         s.push(4);
+TEST_CASE("After construction", "[stack,constructors]")
+{
+    Stack<int, std::vector<int>> s;
 
-//         REQUIRE(s.top() == 4);
-//     }
-// }
+    SECTION("is empty")
+    {
+        REQUIRE(s.empty());
+    }
 
-// template <typename T>
-// std::vector<T> pop_all(Stack<T>& s)
-// {
-//     std::vector<T> values(s.size());
+    SECTION("size is zero")
+    {
+        REQUIRE(s.size() == 0);
+    }
 
-//     for (auto& item : values)
-//     {
-//         item = std::move(s.top());
-//         s.pop();
-//     }
+    SECTION("top throws exception")
+    {
+        REQUIRE_THROWS_AS(s.top(), std::out_of_range);
+    }
+}
 
-//     return values;
-// }
+TEST_CASE("Pushing an item", "[stack,push]")
+{
+    Stack<int> s;
 
-// TEST_CASE("Popping an item", "[stack,pop]")
-// {
-//     Stack<int> s;
+    SECTION("is no longer empty")
+    {
+        s.push(1);
 
-//     s.push(1);
-//     s.push(4);
+        REQUIRE(!s.empty());
+    }
 
-//     int item;
+    SECTION("size is increased")
+    {
+        auto size_before = s.size();
 
-//     SECTION("assignes an item from a top to an argument passed by ref")
-//     {
-//         item = s.top();
-//         s.pop();
+        s.push(1);
 
-//         REQUIRE(item == 4);
-//     }
+        REQUIRE(s.size() - size_before == 1);
+    }
 
-//     SECTION("size is decreased")
-//     {
-//         size_t size_before = s.size();
+    SECTION("recently pushed item is on a top")
+    {
+        s.push(4);
 
-//         item = s.top();
-//         s.pop();
+        REQUIRE(s.top() == 4);
+    }
+}
 
+template <typename T>
+std::vector<T> pop_all(Stack<T>& s)
+{
+    std::vector<T> values(s.size());
 
-//         REQUIRE(size_before - s.size() == 1);
-//     }
+    for (auto& item : values)
+    {
+        item = std::move(s.top());
+        s.pop();
+    }
 
-//     SECTION("LIFO order")
-//     {
-//         int a, b;
+    return values;
+}
 
-//         a = s.top();
-//         s.pop();
+TEST_CASE("Popping an item", "[stack,pop]")
+{
+    Stack<int> s;
 
-//         b = s.top();
-//         s.pop();
+    s.push(1);
+    s.push(4);
 
+    int item;
 
-//         REQUIRE(a == 4);
-//         REQUIRE(b == 1);
-//     }
-// }
+    SECTION("assignes an item from a top to an argument passed by ref")
+    {
+        item = s.top();
+        s.pop();
 
-// TEST_CASE("Move semantics", "[stack,push,pop,move]")
-// {
-//     using namespace std::literals;
+        REQUIRE(item == 4);
+    }
 
-//     SECTION("stores move-only objects")
-//     {
-//         auto txt1 = std::make_unique<std::string>("test1");
+    SECTION("size is decreased")
+    {
+        size_t size_before = s.size();
 
-//         Stack<std::unique_ptr<std::string>> s;
+        item = s.top();
+        s.pop();
 
-//         s.push(move(txt1));
-//         s.push(std::make_unique<std::string>("test2"));
+        REQUIRE(size_before - s.size() == 1);
+    }
 
-//         std::unique_ptr<std::string> value;
+    SECTION("LIFO order")
+    {
+        int a, b;
 
-//         value = std::move(s.top());
-//         s.pop();
-//         REQUIRE(*value == "test2"s);
+        a = s.top();
+        s.pop();
 
-//         value = std::move(s.top());
-//         s.pop();
-//         REQUIRE(*value == "test1"s);
-//     }
+        b = s.top();
+        s.pop();
 
-//     SECTION("move constructor", "[stack,move]")
-//     {
-//         Stack<std::unique_ptr<std::string>> s;
+        REQUIRE(a == 4);
+        REQUIRE(b == 1);
+    }
+}
 
-//         s.push(std::make_unique<std::string>("txt1"));
-//         s.push(std::make_unique<std::string>("txt2"));
-//         s.push(std::make_unique<std::string>("txt3"));
+TEST_CASE("Move semantics", "[stack,push,pop,move]")
+{
+    using namespace std::literals;
 
-//         auto moved_s = std::move(s);
+    SECTION("stores move-only objects")
+    {
+        auto txt1 = std::make_unique<std::string>("test1");
 
-//         auto values = pop_all(moved_s);
+        Stack<std::unique_ptr<std::string>> s;
 
-//         auto expected = {"txt3", "txt2", "txt1"};
-//         REQUIRE(std::equal(values.begin(), values.end(), expected.begin(), [](const auto& a, const auto& b) { return *a == b; }));
-//     }
+        s.push(move(txt1));
+        s.push(std::make_unique<std::string>("test2"));
 
-//     SECTION("move assignment", "[stack,move]")
-//     {
-//         Stack<std::unique_ptr<std::string>> s;
+        std::unique_ptr<std::string> value;
 
-//         s.push(std::make_unique<std::string>("txt1"));
-//         s.push(std::make_unique<std::string>("txt2"));
-//         s.push(std::make_unique<std::string>("txt3"));
+        value = std::move(s.top());
+        s.pop();
+        REQUIRE(*value == "test2"s);
 
-//         Stack<std::unique_ptr<std::string>> target;
-//         target.push(std::make_unique<std::string>("x"));
+        value = std::move(s.top());
+        s.pop();
+        REQUIRE(*value == "test1"s);
+    }
 
-//         target = std::move(s);
+    SECTION("move constructor", "[stack,move]")
+    {
+        Stack<std::unique_ptr<std::string>> s;
 
-//         REQUIRE(target.size() == 3);
+        s.push(std::make_unique<std::string>("txt1"));
+        s.push(std::make_unique<std::string>("txt2"));
+        s.push(std::make_unique<std::string>("txt3"));
 
-//         auto values = pop_all(target);
+        auto moved_s = std::move(s);
 
-//         auto expected = {"txt3", "txt2", "txt1"};
-//         REQUIRE(std::equal(values.begin(), values.end(), expected.begin(), [](const auto& a, const auto& b) { return *a == b; }));
-//     }
-// }
+        auto values = pop_all(moved_s);
+
+        auto expected = {"txt3", "txt2", "txt1"};
+        REQUIRE(std::equal(values.begin(), values.end(), expected.begin(), [](const auto& a, const auto& b) { return *a == b; }));
+    }
+
+    SECTION("move assignment", "[stack,move]")
+    {
+        Stack<std::unique_ptr<std::string>> s;
+
+        s.push(std::make_unique<std::string>("txt1"));
+        s.push(std::make_unique<std::string>("txt2"));
+        s.push(std::make_unique<std::string>("txt3"));
+
+        Stack<std::unique_ptr<std::string>> target;
+        target.push(std::make_unique<std::string>("x"));
+
+        target = std::move(s);
+
+        REQUIRE(target.size() == 3);
+
+        auto values = pop_all(target);
+
+        auto expected = {"txt3", "txt2", "txt1"};
+        REQUIRE(std::equal(values.begin(), values.end(), expected.begin(), [](const auto& a, const auto& b) { return *a == b; }));
+    }
+}
