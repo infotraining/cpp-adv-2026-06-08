@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <iostream>
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -144,7 +145,6 @@ TEST_CASE("small exercise")
         std::vector<int> vec_empty;
         auto pos_min = std::min_element(vec_empty.begin(), vec_empty.end());
         REQUIRE(pos_min == vec_empty.end());
-
     }
 
     SECTION("min_value with comparer")
@@ -167,6 +167,7 @@ class Pair
 {
     T1 first_;
     T2 second_;
+
 public:
     template <typename U1, typename U2>
     Pair(U1&& arg1, U2&& arg2)
@@ -247,20 +248,39 @@ TEST_CASE("class templates")
 
     Array<int, 10> arr1 = {1, 2, 3, 4};
 
-    for(const auto& item : arr1)
+    for (const auto& item : arr1)
     {
         std::cout << item << " ";
     }
     std::cout << "\n";
-
 }
+
+template <typename TValue>
+using Dictionary = std::map<std::string, TValue>;
 
 TEST_CASE("template aliases")
 {
-    // TODO
+    std::map<std::string, int> dict_1 = {{"one", 1}, {"two", 2}};
+    Dictionary<int> dict_2 = {{"one", 1}, {"two", 2}};
+
+    using T1 = decltype(dict_1);
+    using T2 = decltype(dict_2);
+
+    static_assert(std::is_same_v<T1, T2>);
+}
+
+// template variable
+template <typename T>
+const T pi_v(3.1415926535897932385);
+
+template <typename T1, typename T2>
+auto calc(T1 r, T2 factor)
+{
+    return 2 * factor * r;
 }
 
 TEST_CASE("template variables")
 {
-    // TODO
+    calc(1.34f, pi_v<float>);
+    calc(1.34, pi_v<double>);
 }
